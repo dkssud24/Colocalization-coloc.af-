@@ -57,6 +57,16 @@ names(gwas)[2] <- c("SNP")
 m <- left_join(coloc_data_eqtl,gwas,by="SNP")
 m2 <- na.omit(m)
 
+sig <- fread("BPTF_clump.clumped")
+sig_snp <- data.frame(sig$SNP)
+haha <- dim(sig_snp)[1]
+
+for( i in 1:haha){
+sibal <- sig_snp[i,]
+tmp <- 
+##############Clumping이 hg19로 됐는데 SNP ID도 hg19임. GTEX hg38로 변환해서 다시해야함 sig_snp[i,]자체도 hg19임 position ID로 변경해야함
+
+
 dataset1 <- list(snp=m2$SNP,beta=m2$slope,varbeta=(m2$slope_se)^2,pval=m2$pval_nominal,MAF = pmin(m2$af, 1-m2$af),N=15201,type="quant")
 dataset2 <- list(snp=m2$SNP,beta=m2$effect_size,varbeta=(m2$standard_error)^2,pval=m2$pvalue,MAF=pmin(m2$af,1-m2$af),N=889004,type="quant")
 
