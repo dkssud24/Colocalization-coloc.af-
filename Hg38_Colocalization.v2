@@ -1,0 +1,75 @@
+#HG19
+awk '$3=="gene" && $0 ~ /gene_type "protein_coding"/ && $0 ~ /gene_name "BPTF"/ {print $1, $4, $5, $7, $9}' gencode.v19.annotation.gtf
+#chr17 65821640 65980494 + gene_id
+
+#> 65821640+500000
+#[1] 66321640
+#> 65821640-500000
+#[1] 65321640
+plink --bfile /BiO/hae/000006_ref_1000G/ref --chr 17 --to-bp 66321640 --from-bp 65321640 --make-bed --out BPTF
+plink --bfile BPTF --clump /BiO/hae/000029_GenomicSEM/central_MAF005/Result.GWAS.input.fuma --clump-p1 1 --clump-p2 1 --clump-kb 1000 --clump-r2 0.01 --out BPTF_clump
+
+
+#HG38
+awk -F'\t' '$3=="gene" && $9 ~ /gene_type=protein_coding/ && $9 ~ /gene_name=BPTF/ {
+  # attribute 필드에서 gene_name 뽑기
+  split($9, arr, ";");
+  for(i in arr){
+    if(arr[i] ~ /gene_name=/){
+      split(arr[i], brr, "=");
+      gene_name=brr[2];
+    }
+    if(arr[i] ~ /gene_id=/){
+      split(arr[i], crr, "=");
+      gene_id=crr[2];
+    }
+  }
+  print $1, $4, $5, $7, gene_name, gene_id;
+}' gencode.v47.annotation.gff3
+#chr17 67825503 67984378 + BPTF ENSG00000171634.19
+
+
+
+library(arrow)
+library(data.table)
+library(dplyr)
+library(coloc)
+
+eqtl_data <- read_parquet("/BiO/hae/000019_EUR_eQTL/GTEx_Analysis_v10_eQTL_all_associations/Brain_Cortex.v10.allpairs.chr17.parquet")
+gwas <- fread("/BiO/hae/000037_Predixcan/central.step1")
+eqtl_data2 <- eqtl_data[grepl("^ENSG00000171634(\\.|$)", eqtl_data$gene_id), ]
+eqtl_data2 <- data.frame(eqtl_data2)
+start <- 67825503
+end <- 67984378
+cis_start <- start - 500000
+cis_end <- end + 500000
+chr <- 17
+
+eqtl_data2$BP <- as.integer(tstrsplit(eqtl_data2$variant_id, "_")[[2]])
+eqtl_data2$CHR <- as.integer(sub("chr", "", tstrsplit(eqtl_data2$variant_id, "_")[[1]]))
+ coloc_data_eqtl <- eqtl_data2 [ eqtl_data2$CHR == 17,]
+ coloc_data_eqtl <- eqtl_data2 [ eqtl_data2$BP > cis_start,]
+ coloc_data_eqtl <- eqtl_data2 [ eqtl_data2$BP < cis_end,]
+
+names(coloc_data_eqtl)[2] <- c("SNP")
+names(gwas)[2] <- c("SNP")
+
+m <- left_join(coloc_data_eqtl,gwas,by="SNP")
+m2 <- na.omit(m)
+
+sig <- fread("BPTF_clump.clumped")
+sig_snp <- data.frame(sig$SNP)
+haha <- dim(sig_snp)[1]
+
+for( i in 1:haha){
+sibal <- sig_snp[i,]
+tmp <- 
+##############Clumping이 hg19로 됐는데 SNP ID도 hg19임. GTEX hg38로 변환해서 다시해야함 sig_snp[i,]자체도 hg19임 position ID로 변경해야함
+
+
+dataset1 <- list(snp=m2$SNP,beta=m2$slope,varbeta=(m2$slope_se)^2,pval=m2$pval_nominal,MAF = pmin(m2$af, 1-m2$af),N=15201,type="quant")
+dataset2 <- list(snp=m2$SNP,beta=m2$effect_size,varbeta=(m2$standard_error)^2,pval=m2$pvalue,MAF=pmin(m2$af,1-m2$af),N=889004,type="quant")
+
+
+my.res <- coloc.abf(dataset1=dataset1,dataset2=dataset2, p1=1e-4, p2=1e-4, p12=1e-5)
+print(my.res)
