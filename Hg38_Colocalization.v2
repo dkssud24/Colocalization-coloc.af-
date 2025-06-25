@@ -114,7 +114,5 @@ s <- my.res$summary
 }
 var20 <- paste("Result.",arg3_gene,".coloc",sep="")
 names(gwas)[2] <- c("SNP")
-#tmp <- gwas[,c(1,2)]
-#tmp2 <- left_join(coloc_summary,tmp,by="SNP")
 tmp2 <- left_join(coloc_summary,gwas,by="SNP")
 fwrite(tmp2,var20,quote=FALSE,row.names=FALSE,sep="\t")
