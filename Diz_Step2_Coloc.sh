@@ -55,6 +55,8 @@ d <- data.frame(d$SNP)
 names(d) <- c("variant_id")
 var12 <- paste("/BiO/hae/000037_Predixcan/",arg4_diz_sub,".step1",sep="")
 hg38 <- fread(var12)
+
+
 m <- left_join(d,hg38,by="variant_id")
 m2 <- na.omit(m)
 var13 <- paste(arg3_gene,"_clump.clumped.hg38",sep="")
@@ -96,10 +98,14 @@ coloc_summary <- data.frame(
 
 
 for( i in 1:haha){
-selected_SNP <- m5[i,]
-selected_SNP <- data.frame(selected_SNP)
-names(selected_SNP) <- c("SNP")
-m6 <- left_join(selected_SNP,m4,by="SNP")
+zz <- m5[i,]
+zz2 <- m4 [ m4$SNP == zz,]
+aa2 <- zz2$position
+real_start <- aa2 - 500000
+real_end <- aa2 + 500000
+
+m_tmp <- m4 [ m4$position > real_start,]
+m6 <- m_tmp [ m_tmp$position < real_end,]
 
 dataset1 <- list(snp=m6$SNP,beta=m6$slope,varbeta=(m6$slope_se)^2,pval=m6$pval_nominal,MAF = pmin(m6$af, 1-m6$af),N=15201,type="quant")
 dataset2 <- list(snp=m6$SNP,beta=m6$effect_size,varbeta=(m6$standard_error)^2,pval=m6$pvalue,MAF=pmin(m6$af,1-m6$af),N=889004,type="quant")
