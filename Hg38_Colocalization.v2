@@ -28,6 +28,10 @@ awk -F'\t' '$3=="gene" && $9 ~ /gene_type=protein_coding/ && $9 ~ /gene_name=BPT
 }' gencode.v47.annotation.gff3
 #chr17 67825503 67984378 + BPTF ENSG00000171634.19
 
+plink --bfile /BiO/hae/000006_ref_1000G/ref --chr 17 --to-bp 66321640 --from-bp 65321640 --make-bed --out BPTF
+plink --bfile BPTF --clump /BiO/hae/000029_GenomicSEM/central_MAF005/Result.GWAS.input.fuma --clump-p1 1 --clump-p2 1 --clump-kb 1000 --clump-r2 0.01 --out BPTF_clump
+
+
 
 #step2
 library(data.table)
