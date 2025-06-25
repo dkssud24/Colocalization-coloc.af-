@@ -112,7 +112,7 @@ s <- my.res$summary
     H4 = s["PP.H4.abf"]
   ))
 }
-var20 <- paste("Result.",arg3_gene,".coloc",sep="")
+var20 <- paste("Result.",arg3_gene,".",arg1_tissue,sep="")
 names(gwas)[2] <- c("SNP")
 tmp2 <- left_join(coloc_summary,gwas,by="SNP")
 fwrite(tmp2,var20,quote=FALSE,row.names=FALSE,sep="\t")
