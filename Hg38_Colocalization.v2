@@ -77,6 +77,18 @@ m5 <- data.frame(m4$SNP)
 names(m5) <- c("SNP")
 haha <- dim(m5)[1]
 
+coloc_summary <- data.frame(
+  SNP = character(),
+  nsnps = numeric(),
+  H0 = numeric(),
+  H1 = numeric(),
+  H2 = numeric(),
+  H3 = numeric(),
+  H4 = numeric(),
+  stringsAsFactors = FALSE
+)
+
+
 for( i in 1:haha){
 selected_SNP <- m5[i,]
 selected_SNP <- data.frame(selected_SNP)
@@ -88,4 +100,21 @@ dataset2 <- list(snp=m6$SNP,beta=m6$effect_size,varbeta=(m6$standard_error)^2,pv
 
 
 my.res <- coloc.abf(dataset1=dataset1,dataset2=dataset2, p1=1e-4, p2=1e-4, p12=1e-5)
-print(my.res)
+s <- my.res$summary
+
+  coloc_summary <- rbind(coloc_summary, data.frame(
+    SNP = as.character(selected_SNP$SNP),
+    nsnps = s["nsnps"],
+    H0 = s["PP.H0.abf"],
+    H1 = s["PP.H1.abf"],
+    H2 = s["PP.H2.abf"],
+    H3 = s["PP.H3.abf"],
+    H4 = s["PP.H4.abf"]
+  ))
+}
+var20 <- paste("Result.",arg3_gene,".coloc",sep="")
+names(gwas)[2] <- c("SNP")
+#tmp <- gwas[,c(1,2)]
+#tmp2 <- left_join(coloc_summary,tmp,by="SNP")
+tmp2 <- left_join(coloc_summary,gwas,by="SNP")
+fwrite(tmp2,var20,quote=FALSE,row.names=FALSE,sep="\t")
