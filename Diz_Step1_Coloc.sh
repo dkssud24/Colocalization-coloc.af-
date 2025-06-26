@@ -4,14 +4,14 @@
 GENE=$1
 
 # 1. GENCODE GFF3에서 유전자 정보 추출 (chr, start, end, strand, gene_name, gene_id)
-INFO=$(awk -v gene="$GENE" -F'\t' '$3=="gene" && $9 ~ "gene_type=protein_coding" && $9 ~ "gene_name="gene {
-  split($9, arr, ";");
-  for(i in arr){
-    if(arr[i] ~ /gene_name=/){split(arr[i], brr, "="); gene_name=brr[2];}
-    if(arr[i] ~ /gene_id=/){split(arr[i], crr, "="); gene_id=crr[2];}
-  }
-  print $1, $4, $5, $7, gene_name, gene_id;
-}' gencode.v47.annotation.gff3)
+INFO=$(awk '$3=="gene" && $0 ~ /gene_type "protein_coding"/ && $0 ~ /gene_name "BPTF"/ {print $1, $4, $5, $7, $9}' gencode.v19.annotation.gtf)
+CHR=$(echo $INFO | awk '{print $1}' | sed 's/chr//')
+START=$(echo $INFO | awk '{print $2}')
+END=$(echo $INFO | awk '{print $3}')
+STRAND=$(echo $INFO | awk '{print $4}')
+GENE_ID=$(echo $INFO | awk -F 'gene_id "' '{print $2}' | awk -F '"' '{print $1}')
+GENE_NAME=$(echo $INFO | awk -F 'gene_name "' '{print $2}' | awk -F '"' '{print $1}')
+
 
 # chr start end strand gene_name gene_id
 CHR=$(echo $INFO | awk '{print $1}' | sed 's/chr//')
